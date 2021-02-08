@@ -1,5 +1,72 @@
 # kafka-ts
 
+Current proposal:
+```
+type KafkaMessage<T> = {
+	topic: string
+	partition: number
+	offset: number
+	data: T
+}
+
+type MessageBuckets<T> = {
+    [partitionKey: string]: Array<KafkaMessage<T>>
+}
+
+
+type ReceiverOptions<T> = {
+	(normal receiver options)
+
+    /*
+     * This function will return either the parsed message input `T`
+     * or an error indicating why the message could not be parsed.
+     *
+     * If this function throws an exception, the input will be discarded.
+     * 
+     * This function is intended to be deterministic; it may NOT return a `Promise`.
+     *
+     * It is recommended to use a library like `io-ts` for input validation.
+     *
+     */
+	filterMap: <InputParseError>(input: any) => Either<InputParseError, T>
+
+    /*
+     * This function is used to indicate when messages must be processed in order, and when messages can be processed in parallel.
+     *
+     * The structure returned by this function is effectively a map of `string` to `Array<T>`, 
+     * where each message in a single `Array<T>` must be processed in order 
+     * and messages under different keys may be processed in parallel.
+     *
+     * An example might be a situation where you want to process messages for single vehicle in order, but messages for different vehicles in parallel:
+     * ```
+     * type VehicleMessage = {
+     *   vehicle_id: string
+     *   some_data: any
+     * }
+     *
+     * kafka.receive({
+     *   ...,
+     *   bucketMessages: (messages: Array<KafkaMessage<VehicleMessage>>) => 
+     *     messages.reduce({} as MessageBuckets<VehicleMessage>, (buckets: MessageBuckets<VehicleMessage>, message: KafkaMessage<VehicleMessage>) => {
+     *       buckets[message.data.vehicle_id] = [
+     *         ...buckets[message.data.vehicle_id],
+     *         message,
+     *       ];
+     *
+     *       return buckets;
+     *   })
+     * });
+     * ```
+     *
+     * This function is intended to be deterministic; it may NOT return a `Promise`.
+     *
+     */
+	bucketMessages: (messages: Array<KafkaMessage<T>>) => MessageBuckets<T>
+
+	processMessage: <ProcessingError extends { retriable: boolean }>(message: KafkaMessage<T>): Promise<Either<ProcessingError, T>>
+}
+```
+
 ## Kafka FAQ
 
 ### How do I remove messages from my queue?
