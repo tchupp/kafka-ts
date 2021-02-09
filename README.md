@@ -15,9 +15,9 @@ type MessageBuckets<T> = {
 
 
 type ReceiverOptions<T> = {
-	(normal receiver options)
+    (normal receiver options)
 
-    /*
+    /**
      * This function will return either the parsed message input `T`
      * or an error indicating why the message could not be parsed.
      *
@@ -28,9 +28,9 @@ type ReceiverOptions<T> = {
      * It is recommended to use a library like `io-ts` for input validation.
      *
      */
-	filterMap: <InputParseError>(input: any) => Either<InputParseError, T>
+    filterMap: <InputParseError>(input: any) => Either<InputParseError, T>
 
-    /*
+    /**
      * This function is used to indicate when messages must be processed in order, and when messages can be processed in parallel.
      *
      * The structure returned by this function is effectively a map of `string` to `Array<T>`, 
@@ -61,9 +61,12 @@ type ReceiverOptions<T> = {
      * This function is intended to be deterministic; it may NOT return a `Promise`.
      *
      */
-	bucketMessages: (messages: Array<KafkaMessage<T>>) => MessageBuckets<T>
+    bucketMessages: (messages: Array<KafkaMessage<T>>) => MessageBuckets<T>
 
-	processMessage: <ProcessingError extends { retriable: boolean }>(message: KafkaMessage<T>): Promise<Either<ProcessingError, T>>
+    /**
+     *
+     */
+    processMessage: <ProcessingError extends { retriable: boolean }>(message: KafkaMessage<T>): Promise<Either<ProcessingError, T>>
 }
 ```
 
