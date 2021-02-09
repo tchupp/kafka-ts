@@ -1,7 +1,7 @@
 # kafka-ts
 
-Current proposal:
-```
+Possible Interface:
+```typescript
 type KafkaMessage<T> = {
 	topic: string
 	partition: number
