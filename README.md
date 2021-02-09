@@ -9,10 +9,7 @@ type KafkaMessage<T> = {
 	data: T
 }
 
-type MessageBuckets<T> = {
-    [partitionKey: string]: Array<KafkaMessage<T>>
-}
-
+type MessageBuckets<T> = Map<string, Array<KafkaMessage<T>>>
 
 type ReceiverOptions<T> = {
     (normal receiver options)
